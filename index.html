@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Submission</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --primary: #3b82f6;
+            --text: #f8fafc;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: var(--bg);
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Submit Data</h2>
+        <form id="dataForm">
+            <input type="text" id="userInput" placeholder="Enter your text..." required autocomplete="off">
+            <button type="submit" id="submitBtn">Send to Database</button>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const form = document.getElementById('dataForm');
+        const input = document.getElementById('userInput');
+        const btn = document.getElementById('submitBtn');
+        const status = document.getElementById('status');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const textValue = input.value.trim();
+            if (!textValue) return;
+
+            // Professional Loading State
+            btn.disabled = true;
+            btn.innerText = 'Sending...';
+            status.innerText = '';
+
+            const { data, error } = await supabase
+                .from('submissions')
+                .insert([{ user_text: textValue }]);
+
+            if (error) {
+                status.style.color = '#ef4444'; // Red error
+                status.innerText = 'Failed to send data. Check console.';
+                console.error(error);
+            } else {
+                status.style.color = '#22c55e'; // Green success
+                status.innerText = 'Successfully saved to database!';
+                input.value = ''; // Clear input
+            }
+
+            // Reset UI
+            btn.disabled = false;
+            btn.innerText = 'Send to Database';
+        });
+    </script>
+</body>
+</html>
